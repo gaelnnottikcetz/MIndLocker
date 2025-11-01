@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinDLocker - Buscar</title>
+    <link rel="stylesheet" href="../css/estiloss.css">
+</head>
+<body>
+    <h1>Buscar Objetos</h1>
+    
+    <div style="text-align: center;">
+        <input type="text" id="busqueda" placeholder="Escribe para buscar..." onkeyup="buscarObjetos()" 
+               style="display: block; margin: 10px auto; width: 300px;">
+        <button onclick="buscarObjetos()" style="display: block; margin: 10px auto;">Buscar</button>
+    </div>
+    
+    <div id="resultados">
+        <!-- Aquí aparecen los resultados -->
+    </div>
+    
+    <br><br>
+    <button onclick="location.href='index3.html'">Volver al Inicio</button>
+
+    <script>
+        function buscarObjetos() {
+            const texto = document.getElementById('busqueda').value.toLowerCase();
+            const objetos = JSON.parse(localStorage.getItem('mindlocker_objetos')) || [];
+            const resultados = document.getElementById('resultados');
+            
+            if (texto === '') {
+                resultados.innerHTML = '<p style="text-align: center;">Escribe algo para buscar</p>';
+                return;
+            }
+            
+            const encontrados = objetos.filter(objeto => 
+                objeto.nombre.toLowerCase().includes(texto) || 
+                objeto.descripcion.toLowerCase().includes(texto)
+            );
+            
+            if (encontrados.length === 0) {
+                resultados.innerHTML = '<p style="text-align: center;">No se encontraron objetos</p>';
+                return;
+            }
+            
+            let html = '<ul>';
+            encontrados.forEach(objeto => {
+                html += `
+                    <li>
+                        <strong>${objeto.nombre}</strong><br>
+                        <small>${objeto.descripcion}</small><br>
+                        <em>Fecha: ${objeto.fecha}</em>
+                        <button onclick="eliminarObjeto(${objeto.id})">Eliminar</button>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            
+            resultados.innerHTML = html;
+        }
+        
+        function eliminarObjeto(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este objeto?')) {
+                let objetos = JSON.parse(localStorage.getItem('mindlocker_objetos')) || [];
+                objetos = objetos.filter(objeto => objeto.id !== id);
+                localStorage.setItem('mindlocker_objetos', JSON.stringify(objetos));
+                buscarObjetos();
+                alert('Objeto eliminado');
+            }
+        }
+    </script>
+</body>
+</html>

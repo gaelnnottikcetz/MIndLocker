@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinDLocker - Añadir</title>
+    <link rel="stylesheet" href="../css/estiloss.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Añadir Nuevo Objeto</h1>
+        
+        <form id="form-objeto">
+            <div class="form-group">
+                <input type="text" id="nombre" placeholder="Nombre del objeto" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <textarea id="descripcion" placeholder="Descripción" class="form-control"></textarea>
+            </div>
+
+            <div class="form-group">
+                <h3>Agregar Imagen</h3>
+                
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <button type="button" class="btn-secondary" onclick="activarCamara()" style="width: auto;">
+                        📷 Tomar Foto
+                    </button>
+                    
+                    <div id="camara-container" style="display: none; margin: 15px 0;">
+                        <video id="video" width="300" autoplay style="border-radius: 8px;"></video>
+                        <br>
+                        <button type="button" class="btn-secondary" onclick="tomarFoto()" style="width: auto;">
+                            📸 Capturar
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="cerrarCamara()" style="width: auto;">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                    
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <img id="foto-preview" style="max-width: 300px; border-radius: 8px; display: none; margin: 10px 0;">
+                </div>
+
+                <div style="text-align: center;">
+                    <input type="file" id="archivo-imagen" accept="image/*" class="form-control" style="width: 100%; max-width: 300px; margin: 0 auto;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn">💾 Guardar</button>
+        </form>
+        
+        <button onclick="location.href='index3.html'" class="btn-secondary">← Volver</button>
+    </div>
+
+    <script>
+        let stream = null;
+        let imagenData = null;
+
+        function activarCamara() {
+            const constraints = { video: { facingMode: "environment" } };
+            
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    const video = document.getElementById('video');
+                    video.srcObject = stream;
+                    document.getElementById('camara-container').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('archivo-imagen').style.display = 'block';
+                });
+        }
+
+        function tomarFoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            const preview = document.getElementById('foto-preview');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            imagenData = canvas.toDataURL('image/jpeg');
+            preview.src = imagenData;
+            preview.style.display = 'block';
+            
+            cerrarCamara();
+        }
+
+        function cerrarCamara() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('camara-container').style.display = 'none';
+        }
+
+        document.getElementById('form-objeto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('nombre').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const archivoInput = document.getElementById('archivo-imagen');
+            
+            const nuevoObjeto = {
+                id: Date.now(),
+                nombre: nombre,
+                descripcion: descripcion,
+                fecha: new Date().toLocaleDateString(),
+                imagen: null
+            };
+
+            if (imagenData) {
+                nuevoObjeto.imagen = imagenData;
+                guardarObjeto(nuevoObjeto);
+            } else if (archivoInput.files.length > 0) {
+                const archivo = archivoInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    nuevoObjeto.imagen = e.target.result;
+                    guardarObjeto(nuevoObjeto);
+                }
+                reader.readAsDataURL(archivo);
+            } else {
+                guardarObjeto(nuevoObjeto);
+            }
+            
+            document.getElementById('form-objeto').reset();
+            document.getElementById('foto-preview').style.display = 'none';
+            imagenData = null;
+            alert('Objeto guardado');
+        });
+
+        function guardarObjeto(objeto) {
+            let objetos = JSON.parse(localStorage.getItem('mindlocker_objetos')) || [];
+            objetos.push(objeto);
+            localStorage.setItem('mindlocker_objetos', JSON.stringify(objetos));
+        }
+    </script>
+</body>
+</html>

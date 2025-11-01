@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinDLocker - Objetos</title>
+    <link rel="stylesheet" href="../css/estiloss.css">
+</head>
+<body>
+    <h1>Objetos Guardados</h1>
+    
+    <div id="lista-objetos">
+        <!-- Aquí se cargan los objetos -->
+    </div>
+    
+    <br>
+    <button onclick="location.href='index3.html'">Volver al Inicio</button>
+
+    <script>
+        function cargarObjetos() {
+            const objetos = JSON.parse(localStorage.getItem('mindlocker_objetos')) || [];
+            const lista = document.getElementById('lista-objetos');
+            
+            if (objetos.length === 0) {
+                lista.innerHTML = '<p>No hay objetos guardados</p>';
+                return;
+            }
+            
+            let html = '<ul>';
+            objetos.forEach(objeto => {
+                html += `
+                    <li>
+                        <strong>${objeto.nombre}</strong><br>
+                        <small>${objeto.descripcion}</small><br>
+                        <em>Fecha: ${objeto.fecha}</em>
+                        <button onclick="eliminarObjeto(${objeto.id})">Eliminar</button>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            
+            lista.innerHTML = html;
+        }
+        
+        function eliminarObjeto(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este objeto?')) {
+                let objetos = JSON.parse(localStorage.getItem('mindlocker_objetos')) || [];
+                
+                // Filtrar el objeto a eliminar
+                objetos = objetos.filter(objeto => objeto.id !== id);
+                
+                // Guardar la nueva lista
+                localStorage.setItem('mindlocker_objetos', JSON.stringify(objetos));
+                
+                // Recargar la lista
+                cargarObjetos();
+                alert('Objeto eliminado');
+            }
+        }
+        
+        // Cargar objetos al abrir la página
+        cargarObjetos();
+        html += `
+    <li>
+        <strong>${objeto.nombre}</strong><br>
+        <small>${objeto.descripcion}</small><br>
+        ${objeto.imagen ? `<img src="${objeto.imagen}" style="max-width: 200px; margin: 10px 0;">` : ''}
+        <em>Fecha: ${objeto.fecha}</em>
+        <button onclick="eliminarObjeto(${objeto.id})">Eliminar</button>
+    </li>
+`;
+    </script>
+</body>
+</html>
